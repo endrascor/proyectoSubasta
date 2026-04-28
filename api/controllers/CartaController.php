@@ -63,7 +63,19 @@ public function allCartasActivas()
         }
     }
 
-
+public function allCartasbyId($id)
+    {
+        try {
+            $response = new Response();
+            $carta = new CartaModel();
+            $result = $carta->allCartasbyId($id);
+            $response->toJSON($result);
+        } catch (Exception $e) {
+            $response->toJSON($result);
+            handleException($e);
+            
+        }
+    }
 public function create()
 {
     try {
@@ -126,7 +138,4 @@ public function delete()
         handleException($e);
     }
 }
-
-
-
 }

@@ -19,6 +19,9 @@ class CartaService {
   allCartasActivas(){
     return axios.get(BASE_URL + "/allCartasActivas/");
   }
+  allCartasbyId(id){
+  return axios.get(BASE_URL + "/allCartasbyId/" + id);
+}
 
   createCarta(Carta) {
     return axios.post(BASE_URL, JSON.stringify(Carta));
