@@ -15,6 +15,7 @@ import EstadoCartaService from "@/services/EstadoCartaService";
 import ImageService from "../../services/ImageService";
 import toast from "react-hot-toast";
 import { categoriaStyles, categoriaGlow } from "../../utils/categoriaColors";
+import { useUser } from "@/hooks/useUser";
 
 export default function CreateCarta() {
   const navigate = useNavigate();
@@ -25,14 +26,14 @@ export default function CreateCarta() {
 
   const [files,    setFiles]    = useState([]);
   const [fileURLs, setFileURLs] = useState([]);
-
+const { user } = useUser();
   const [form, setForm] = useState({
     nombre:        "",
     descripcion:   "",
     idCondicion:   "",
     idEstadoCarta: "",
     categorias:    [],
-    idUsuario:     1,
+    idUsuario:     user?.idUsuario,
   });
 
   const [errors,  setErrors]  = useState({});
