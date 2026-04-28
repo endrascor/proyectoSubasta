@@ -347,21 +347,6 @@ export function ListCardCartas({ data, onRefresh }) {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-[#020617] via-[#020617] to-[#0f172a]">
-
-        {/* HEADER */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-2">
-          <h1 className="text-2xl font-bold text-white/90 tracking-tight flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-yellow-400" />
-            Mis Cartas
-          </h1>
-          <Link to="/carta/crear">
-            <Button className="flex items-center gap-2 bg-yellow-400 hover:bg-yellow-300 text-black font-semibold rounded-full px-5 py-2 shadow-lg shadow-yellow-400/30 hover:scale-105 transition-all duration-200">
-              <Plus className="w-4 h-4" />
-              Nueva Carta
-            </Button>
-          </Link>
-        </div>
-
         {/* GRID */}
         <div className="grid gap-8 p-6 sm:grid-cols-2 lg:grid-cols-3">
           {data && data.map((item) => {
