@@ -1,0 +1,362 @@
+/* ── Fuentes ─────────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=DM+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300;1,600&display=swap');
+
+/* ── Base ────────────────────────────────────────────────────────────────── */
+.ds-root {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+}
+
+/* ── Animaciones ─────────────────────────────────────────────────────────── */
+@keyframes ds-fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes ds-slideIn {
+  from { opacity: 0; transform: translateY(-12px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes ds-glowPulse {
+  0%, 100% { opacity: .05; }
+  50%       { opacity: .13; }
+}
+@keyframes ds-goldRing {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(250,204,21,0), 0 0 24px rgba(250,204,21,.05); }
+  50%       { box-shadow: 0 0 0 5px rgba(250,204,21,.05), 0 0 50px rgba(250,204,21,.1); }
+}
+@keyframes ds-borderRun {
+  0%   { background-position: 0% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes ds-scanline {
+  0%   { top: -2%; }
+  100% { top: 102%; }
+}
+@keyframes ds-sweep {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  50%  { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
+@keyframes ds-orbFloat {
+  0%   { transform: translate(0, 0) scale(1); }
+  33%  { transform: translate(30px, -18px) scale(1.08); }
+  66%  { transform: translate(-18px, 14px) scale(.93); }
+  100% { transform: translate(0, 0) scale(1); }
+}
+@keyframes ds-floatY {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-5px); }
+}
+@keyframes ds-tick {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%       { opacity: .25; transform: scale(.8); }
+}
+@keyframes ds-bidPop {
+  0%   { opacity: 0; transform: translateY(-14px) scale(.92); }
+  60%  { transform: translateY(2px) scale(1.01); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes ds-crownIn {
+  0%   { transform: rotate(-10deg) scale(.7); opacity: 0; }
+  70%  { transform: rotate(3deg) scale(1.06); }
+  100% { transform: rotate(0) scale(1); opacity: 1; }
+}
+@keyframes ds-shimmerBtn {
+  0%   { left: -100%; }
+  100% { left: 150%; }
+}
+@keyframes ds-spinr {
+  to { transform: rotate(360deg); }
+}
+@keyframes ds-qbFill {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes ds-winnerIn {
+  0%   { opacity: 0; transform: scale(.88) translateY(16px); }
+  60%  { transform: scale(1.02) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Clases de entrada escalonada ────────────────────────────────────────── */
+.ds-a1 { animation: ds-fadeUp .65s cubic-bezier(.22,1,.36,1) both; }
+.ds-a2 { animation: ds-fadeUp .65s .08s cubic-bezier(.22,1,.36,1) both; }
+.ds-a3 { animation: ds-fadeUp .65s .16s cubic-bezier(.22,1,.36,1) both; }
+.ds-a4 { animation: ds-fadeUp .65s .24s cubic-bezier(.22,1,.36,1) both; }
+.ds-a5 { animation: ds-fadeUp .65s .32s cubic-bezier(.22,1,.36,1) both; }
+
+/* ── Hero decorativo ─────────────────────────────────────────────────────── */
+.ds-hero-scanline {
+  position: absolute;
+  left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(250,204,21,.15), rgba(250,204,21,.5), rgba(250,204,21,.15), transparent);
+  pointer-events: none;
+  z-index: 5;
+  animation: ds-scanline 9s linear infinite;
+}
+.ds-hero-topline {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent, #facc15 25%, #e8736b 50%, #4a7fc1 75%, transparent);
+  background-size: 200%;
+  animation: ds-borderRun 4s linear infinite;
+  z-index: 5;
+}
+
+/* ── Orbs de fondo (hero) ────────────────────────────────────────────────── */
+.ds-orb-a {
+  position: absolute;
+  width: 480px; height: 340px;
+  border-radius: 50%;
+  filter: blur(110px);
+  background: radial-gradient(ellipse, rgba(250,204,21,.12) 0%, transparent 70%);
+  top: -110px; right: -70px;
+  animation: ds-orbFloat 16s ease-in-out infinite;
+  pointer-events: none;
+}
+.ds-orb-b {
+  position: absolute;
+  width: 300px; height: 220px;
+  border-radius: 50%;
+  filter: blur(90px);
+  background: radial-gradient(ellipse, rgba(74,127,193,.09) 0%, transparent 70%);
+  bottom: -50px; left: -30px;
+  animation: ds-orbFloat 20s 4s ease-in-out infinite;
+  pointer-events: none;
+}
+.ds-orb-c {
+  position: absolute;
+  width: 220px; height: 160px;
+  border-radius: 50%;
+  filter: blur(80px);
+  background: radial-gradient(ellipse, rgba(167,139,250,.07) 0%, transparent 70%);
+  top: 40%; left: 38%;
+  animation: ds-orbFloat 13s 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── Stats bar ───────────────────────────────────────────────────────────── */
+.ds-stat-cell {
+  transition: background .35s;
+}
+.ds-stat-cell:hover {
+  background: rgba(250,204,21,.025) !important;
+}
+.ds-stat-cell::before {
+  content: '';
+  position: absolute; bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 0; height: 1.5px;
+  background: linear-gradient(90deg, transparent, #facc15, transparent);
+  transition: width .5s;
+}
+.ds-stat-cell:hover::before {
+  width: 75%;
+}
+
+/* ── Cards generales ─────────────────────────────────────────────────────── */
+.ds-card {
+  transition: border-color .4s;
+}
+.ds-card:hover {
+  border-color: rgba(250,204,21,.18) !important;
+}
+
+/* ── Imagen flotante ─────────────────────────────────────────────────────── */
+.ds-img-wrap {
+  animation: ds-floatY 4s ease-in-out infinite;
+  transition: all .5s;
+}
+.ds-img-wrap:hover {
+  transform: scale(1.06) rotate(-1deg) translateY(-4px) !important;
+}
+
+/* ── Card líder ──────────────────────────────────────────────────────────── */
+.ds-leader-card {
+  transition: all .4s;
+}
+.ds-leader-card:hover {
+  border-color: rgba(250,204,21,.42) !important;
+  box-shadow: 0 0 40px rgba(250,204,21,.08);
+}
+
+/* ── Corona ──────────────────────────────────────────────────────────────── */
+.ds-crown {
+  animation: ds-crownIn .65s cubic-bezier(.22,1,.36,1) both;
+  transition: transform .3s;
+}
+.ds-crown:hover {
+  transform: rotate(-8deg) scale(1.15);
+}
+
+/* ── Panel de puja ───────────────────────────────────────────────────────── */
+.ds-bid-panel {
+  transition: border-color .4s;
+}
+.ds-bid-panel:hover {
+  border-color: rgba(250,204,21,.32) !important;
+}
+.ds-bp-glow-a {
+  animation: ds-orbFloat 12s ease-in-out infinite;
+}
+.ds-bp-glow-b {
+  animation: ds-orbFloat 15s 3s ease-in-out infinite;
+}
+.ds-bp-topline {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(250,204,21,.8), transparent);
+  background-size: 200%;
+  animation: ds-sweep 5s ease-in-out infinite;
+}
+
+/* ── Input de monto ──────────────────────────────────────────────────────── */
+.ds-bid-inp {
+  transition: all .35s;
+}
+.ds-bid-inp:focus {
+  border-color: rgba(250,204,21,.5) !important;
+  background: rgba(250,204,21,.04) !important;
+  box-shadow: 0 0 0 4px rgba(250,204,21,.07), 0 8px 28px rgba(0,0,0,.3) !important;
+  outline: none;
+}
+.ds-bid-inp.err {
+  border-color: rgba(248,113,113,.5) !important;
+  background: rgba(248,113,113,.03) !important;
+  box-shadow: 0 0 0 4px rgba(248,113,113,.07) !important;
+}
+.ds-bid-inp.ok {
+  border-color: rgba(74,222,128,.42) !important;
+  background: rgba(74,222,128,.03) !important;
+  box-shadow: 0 0 0 4px rgba(74,222,128,.06) !important;
+}
+
+/* ── Botones de precio rápido ────────────────────────────────────────────── */
+.ds-qb {
+  position: relative;
+  overflow: hidden;
+  transition: all .28s;
+}
+.ds-qb::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: rgba(250,204,21,.1);
+  transform: translateY(100%);
+  transition: transform .3s;
+}
+.ds-qb:hover::before {
+  transform: translateY(0);
+  animation: ds-qbFill .3s ease forwards;
+}
+.ds-qb:hover {
+  color: #facc15 !important;
+  border-color: rgba(250,204,21,.5) !important;
+  transform: translateY(-2px);
+}
+.ds-qb:active {
+  transform: translateY(0) scale(.97);
+}
+
+/* ── Botón principal de puja ─────────────────────────────────────────────── */
+.ds-bid-btn {
+  position: relative;
+  overflow: hidden;
+  transition: all .3s;
+}
+.ds-bid-btn::before {
+  content: '';
+  position: absolute; top: 0; left: -100%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent);
+  transition: left .6s;
+}
+.ds-bid-btn:hover:not(:disabled)::before {
+  left: 150%;
+}
+.ds-bid-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(250,204,21,.38), 0 4px 14px rgba(0,0,0,.3);
+}
+.ds-bid-btn:active:not(:disabled) {
+  transform: translateY(0) scale(.98);
+}
+
+/* ── Filas del historial de pujas ────────────────────────────────────────── */
+.ds-bid-row {
+  transition: all .4s;
+  cursor: default;
+}
+.ds-bid-row:hover {
+  transform: translateX(3px);
+}
+.ds-bid-row.top:hover {
+  border-color: rgba(250,204,21,.38) !important;
+  background: rgba(250,204,21,.09) !important;
+}
+.ds-bid-row.reg:hover {
+  background: rgba(255,255,255,.03) !important;
+}
+.ds-bid-row.fresh {
+  animation: ds-bidPop .58s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* ── Card ganador ────────────────────────────────────────────────────────── */
+.ds-winner-card {
+  animation: ds-winnerIn .7s cubic-bezier(.22,1,.36,1) both;
+}
+
+/* ── Botón regresar ──────────────────────────────────────────────────────── */
+.ds-back-btn {
+  position: relative;
+  overflow: hidden;
+}
+.ds-back-btn::before {
+  content: '';
+  position: absolute; left: -100%; top: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(250,204,21,.06), transparent);
+  transition: left .4s;
+}
+.ds-back-btn:hover::before {
+  left: 100%;
+}
+.ds-back-btn:hover {
+  color: #facc15 !important;
+  border-color: rgba(250,204,21,.35) !important;
+  background: rgba(250,204,21,.04) !important;
+}
+
+/* ── Pill de usuario ─────────────────────────────────────────────────────── */
+.ds-user-pill::after {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 40px;
+  background: linear-gradient(135deg, rgba(250,204,21,.06), transparent);
+  opacity: 0;
+  transition: opacity .3s;
+}
+.ds-user-pill:hover::after {
+  opacity: 1;
+}
+.ds-user-pill:hover {
+  border-color: rgba(250,204,21,.35) !important;
+  transform: translateY(-1px);
+}
+.ds-user-pill:hover .ds-u-avatar {
+  transform: rotate(8deg) scale(1.1);
+}
+.ds-user-pill:hover .ds-u-arrow {
+  color: #facc15 !important;
+  transform: translateX(3px);
+}
+
+/* ── Fila del vendedor ───────────────────────────────────────────────────── */
+.ds-seller-row:hover {
+  background: rgba(255,255,255,.03) !important;
+  border-color: rgba(255,255,255,.12) !important;
+}
+.ds-seller-row:hover .ds-s-icon {
+  transform: rotate(10deg);
+}
