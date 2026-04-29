@@ -29,6 +29,29 @@ class FacturacionModel
         }
     }
 
+    public function allFacturasbyId($id)
+    {
+        try {
+            $usuarioM = new UsuarioModel();
+            $subastaM = new SubastaModel();
+            $vSql = "SELECT f.*, ef.descripcion as estadoDescripcion 
+                     FROM facturacion f
+                     JOIN estado_facturacion ef ON f.idEstadoFacturacion = ef.idEstadoFacturacion
+                     WHERE f.idUsuario = $id
+                     ORDER BY f.idFacturacion DESC";
+            $vResultado = $this->enlace->ExecuteSQL($vSql);
+            if (!empty($vResultado) && is_array($vResultado)) {
+                for ($i = 0; $i < count($vResultado); $i++) {
+                    $vResultado[$i]->usuario = $usuarioM->get($vResultado[$i]->idUsuario);
+                    $vResultado[$i]->subasta = $subastaM->get($vResultado[$i]->idSubasta);
+                }
+            }
+            return $vResultado;
+        } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
     public function getBySubasta($idSubasta)
     {
         try {

@@ -170,7 +170,7 @@ useEffect(() => {
           res = await FacturacionService.getAll();
         } else {
           // Comprador/Vendedor ve solo sus pagos
-          res = await FacturacionService.getByUsuario(user.idUsuario);
+          res = await FacturacionService.allFacturasbyId(user.idUsuario);
         }
         const data = res.data?.data ?? res.data;
         setFacturas(Array.isArray(data) ? data : []);

@@ -24,6 +24,19 @@ class facturacion
         }
     }
 
+    public function allFacturasbyId($id)
+    {
+        try {
+            $response    = new Response();
+            $facturacion = new FacturacionModel();
+            $result      = $facturacion->allFacturasbyId($id);
+            $response->toJSON($result);
+        } catch (Exception $e) {
+            $response->toJSON($result);
+            handleException($e);
+        }
+    }
+
  public function confirmarpago()
     {
         try {

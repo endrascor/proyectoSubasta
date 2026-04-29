@@ -9,11 +9,9 @@ class FacturacionService {
     return axios.get(BASE_URL);
   }
 
-  // Comprador/Vendedor: trae solo sus pagos
-  // ← NUEVO: necesitas crear este endpoint en el backend
-  getByUsuario(idUsuario) {
-    return axios.get(BASE_URL + '/byUsuario/' + idUsuario);
-  }
+  allFacturasbyId(id){
+  return axios.get(BASE_URL + "/allFacturasbyId/" + id);
+}
 
   confirmarPago(idFacturacion) {
     return axios({
