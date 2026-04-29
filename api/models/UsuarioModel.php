@@ -29,6 +29,42 @@ class UsuarioModel
         }
     }
 
+    public function allVendedores()
+	{
+        try{
+            $rolM = new RolModel();
+            $estadoUsuarioM = new EstadoUsuarioModel();
+		    $vSql = "SELECT 
+                        u.idUsuario,
+                        u.cedula,
+                        u.nombre,
+                        u.email,
+                        u.idRol,
+                        u.idEstadoUsuario,
+                        u.fechaRegistro,
+
+                        (SELECT COUNT(*) 
+                        FROM subasta s 
+                        WHERE s.idUsuario = u.idUsuario) 
+                        AS cantidadSubastas,
+
+                        FROM usuario u
+                        WHERE u.idRol = 1;"; // 1 es el ID del rol de vendedor
+		    $vResultado = $this->enlace->ExecuteSQL($vSql);
+		    if (!empty($vResultado) && is_array($vResultado)) {
+                for ($i = 0; $i < count($vResultado); $i++) {
+                    //Rol
+                    $vResultado[$i]->rol = $rolM->get($vResultado[$i]->idRol);
+                    //Estado
+                    $vResultado[$i]->estadoUsuario = $estadoUsuarioM->get($vResultado[$i]->idEstadoUsuario);
+                }
+		    }
+		    return $vResultado;
+	    } catch (Exception $e) {
+            handleException($e);
+        }
+    }
+
 	public function get($id)
 	{
         try{
@@ -55,7 +91,7 @@ class UsuarioModel
                         AS cantidadPujas
 
                         FROM usuario u
-                        WHERE u.idusuario = $id;";
+                        WHERE u.idUsuario = $id;";
 
 		    $vResultado = $this->enlace->ExecuteSQL($vSql);
 		    if (!empty($vResultado)) {

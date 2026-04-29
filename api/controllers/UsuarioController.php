@@ -13,6 +13,19 @@ class usuario
             handleException($e);
         }
     }
+
+    public function allVendedores()
+    {
+        try {
+            $response = new Response();
+            $usuario = new UsuarioModel();
+            $result = $usuario->allVendedores();
+            $response->toJSON($result);
+        } catch (Exception $e) {
+            $response->toJSON($result);
+            handleException($e);
+        }
+    }
     public function get($id)
     {
         try{

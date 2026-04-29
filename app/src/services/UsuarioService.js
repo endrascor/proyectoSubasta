@@ -9,6 +9,10 @@ class UsuarioService {
   getUsuarios() {
     return axios.get(BASE_URL);
   }
+
+  allVendedores() {
+    return axios.get(BASE_URL + '/allVendedores');
+  }
   //Obtener usuario
   //http://localhost:81/proyectoSubasta/api/usuario/1
   getUsuarioById(UsuarioId){
