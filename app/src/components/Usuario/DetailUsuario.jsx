@@ -4,6 +4,10 @@ import UsuarioService from '../../services/UsuarioService';
 import { ErrorAlert } from "../ui/custom/ErrorAlert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+
+import { useUser } from "@/hooks/useUser";
+
+
 import {
   Clock,
   Globe,
@@ -21,11 +25,16 @@ import { EmptyState } from '../ui/custom/EmptyState';
 export function DetailUsuario() {
   const navigate  = useNavigate();
   const { id }    = useParams();
+  const { user, authorize } = useUser();
   const [usuario, setData]   = useState(null);
   const [error,   setError]  = useState(null);
   const [loading, setLoading] = useState(true);
 
+
+  
+
   useEffect(() => {
+    
     const fetchData = async () => {
       try {
         const response = await UsuarioService.getUsuarioById(id);
@@ -52,7 +61,14 @@ export function DetailUsuario() {
   const isActive   = u.estadoUsuario?.descripcion?.toLowerCase().includes("activ");
   const hasSubastas = Number(u.cantidadSubastas) > 0;
   const hasPujas    = Number(u.cantidadPujas) > 0;
+  const esVendedor = u.rol.nombre === "Vendedor";
+const esComprador = u.rol.nombre === "Comprador";
 
+
+
+
+
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#020617] via-[#0a0f1e] to-[#020617] px-6 py-10">
 
@@ -211,8 +227,31 @@ export function DetailUsuario() {
 
           </CardContent>
         </Card>
-
+{/* BOTÓN HISTORIAL */}
+{(esVendedor || esComprador) && (
+  <div className="px-8 pt-6">
+    <Button
+      onClick={() => {
+        if (esVendedor) {
+          navigate(`/usuario/${id}/subastas`);
+        } else {
+          navigate(`/usuario/${id}/pujas`);
+        }
+      }}
+      className="
+        w-full rounded-2xl h-11
+        bg-gradient-to-r from-purple-500 to-blue-500
+        hover:from-purple-400 hover:to-blue-400
+        text-white font-semibold text-sm
+        shadow-lg shadow-purple-500/20
+      "
+    >
+      {esVendedor ? "Ver mis subastas" : "Ver mis pujas"}
+    </Button>
+  </div>
+)}
       </div>
     </div>
+    
   );
 }

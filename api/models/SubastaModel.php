@@ -259,4 +259,37 @@ class SubastaModel
             handleException($e);
         }
     }
+
+public function getSubastasByUsuario($idUsuario)
+{
+    try {
+        $cartaM         = new CartaModel();
+        $estadoSubastaM = new EstadoSubastaModel();
+        $usuarioM       = new UsuarioModel();
+        
+        $vSql = "SELECT
+                    u.idSubasta, u.fechaInicio, u.fechaCierre, u.precio,
+                    u.incrementoMin, u.idEstadoSubasta, u.idUsuario, u.idCarta,
+                    (SELECT COUNT(*) FROM puja s WHERE s.idSubasta = u.idSubasta) AS cantidadPujas
+                 FROM subasta u
+                 WHERE u.idUsuario = $idUsuario
+                 ORDER BY idSubasta DESC";
+        
+        $vResultado = $this->enlace->ExecuteSQL($vSql);
+        
+        // Debug: Ver qué está devolviendo
+        error_log("Subastas para usuario $idUsuario: " . json_encode($vResultado));
+        
+        if (!empty($vResultado) && is_array($vResultado)) {
+            for ($i = 0; $i < count($vResultado); $i++) {
+                $vResultado[$i]->carta         = $cartaM->get($vResultado[$i]->idCarta);
+                $vResultado[$i]->estadoSubasta = $estadoSubastaM->get($vResultado[$i]->idEstadoSubasta);
+                $vResultado[$i]->creador       = $usuarioM->get($vResultado[$i]->idUsuario);
+            }
+        }
+        return $vResultado;
+    } catch (Exception $e) {
+        handleException($e);
+    }
+}
 }

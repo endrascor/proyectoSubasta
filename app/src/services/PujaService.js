@@ -17,6 +17,8 @@ class PujaService {
     });
   }
 
-
+   getPujasByUsuario(usuarioId) {
+    return axios.get(BASE_URL + "/getPujasByUsuario/" + usuarioId);
+  }
 }
 export default new PujaService();

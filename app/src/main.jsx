@@ -24,6 +24,9 @@ import EditCarta from './components/Carta/EditCarta'
 import { ListFacturacion } from './components/Facturacion/ListFacturacion'
 import { RoleRoute } from './components/Auth/RoleRoute'
 import Login from './components/Usuario/Login'
+import AdminReportes from './components/Reportes/AdminReportes' 
+import { ListSubastasPorUsuario } from './components/Usuario/ListSubastasPorUsuario'
+import { ListPujasPorUsuario } from './components/Usuario/ListPujasPorUsuario'
 
 
 
@@ -34,7 +37,25 @@ const rutas = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "*", element: <PageNotFound /> },
       { path: "usuario/table",          element: (<RoleRoute requiredRoles={["Administrador"]}><TableUsuarios /></RoleRoute>)},
-      { path: "usuario/detail/:id",     element: (<RoleRoute requiredRoles={["Administrador"]}><DetailUsuario /></RoleRoute>)},
+{ 
+  path: "usuario/detail/:id", 
+  element: (
+    <RoleRoute requiredRoles={["Administrador","Comprador","Vendedor"]}>
+      <DetailUsuario />
+    </RoleRoute>
+  )
+},
+{ path: "usuario/:id/subastas", element: (
+  <RoleRoute requiredRoles={["Administrador","Vendedor"]}>
+    <ListSubastasPorUsuario />
+  </RoleRoute>
+)},
+{ path: "usuario/:id/pujas", element: (
+  <RoleRoute requiredRoles={["Administrador","Comprador"]}>
+    <ListPujasPorUsuario />
+  </RoleRoute>
+)},
+
       { path: "carta",                  element: (<RoleRoute requiredRoles={["Administrador","Vendedor"]}><ListCartas /></RoleRoute>)},
       { path: "carta/detail/:id",       element: (<RoleRoute requiredRoles={["Administrador","Vendedor"]}><DetailCarta /></RoleRoute>)},
       { path: "subasta/SubastasActivas",    element: <ListSubastasActivas /> },
@@ -44,13 +65,21 @@ const rutas = createBrowserRouter([
       { path: "usuario/create",         element: <CreateUsuario /> },
       { path: "usuario/delete/:id",     element: <DeleteUsuario /> },
       
-      { path: "usuario/edit/:id",       element: (<RoleRoute requiredRoles={["Administrador"]}><UpdateUsuario /></RoleRoute>) },
+      { 
+  path: "usuario/edit/:id", 
+  element: (
+    <RoleRoute requiredRoles={["Administrador","Comprador","Vendedor"]}>
+      <UpdateUsuario />
+    </RoleRoute>
+  )
+},
       { path: "carta/:id/subastas",     element: (<RoleRoute requiredRoles={["Administrador","Vendedor"]}><CartaSubastas /></RoleRoute>) },
       { path: "subasta/create",         element: (<RoleRoute requiredRoles={["Administrador","Vendedor"]}><CreateSubasta /></RoleRoute>) },
       { path: "carta/crear",            element: (<RoleRoute requiredRoles={["Administrador","Vendedor"]}><CartaCRUD /></RoleRoute>) },
       { path: "subasta/edit/:id",       element: (<RoleRoute requiredRoles={["Administrador","Vendedor"]}><EditSubasta /></RoleRoute>) },
       { path: "carta/editar/:id",       element: (<RoleRoute requiredRoles={["Administrador","Vendedor"]}><EditCarta /></RoleRoute>) },
       { path: "facturacion",            element: (<RoleRoute requiredRoles={["Administrador","Comprador"]}><ListFacturacion /></RoleRoute>) },
+      { path: "admin/reportes",         element: (<RoleRoute requiredRoles={["Administrador"]}><AdminReportes /></RoleRoute>) },
     ],
   },
 ])

@@ -98,4 +98,16 @@ public function delete()
         handleException($e);
     }
 }  
+
+public function getSubastasByUsuario($idUsuario)
+{
+    try {
+        $response = new Response();
+        $subasta = new SubastaModel();
+        $result = $subasta->getSubastasByUsuario($idUsuario);
+        $response->toJSON($result);
+    } catch (Exception $e) {
+        handleException($e);
+    }
+}
 }

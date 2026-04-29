@@ -46,7 +46,7 @@ class UsuarioModel
                         (SELECT COUNT(*) 
                         FROM subasta s 
                         WHERE s.idUsuario = u.idUsuario) 
-                        AS cantidadSubastas,
+                        AS cantidadSubastas
 
                         FROM usuario u
                         WHERE u.idRol = 1;"; // 1 es el ID del rol de vendedor

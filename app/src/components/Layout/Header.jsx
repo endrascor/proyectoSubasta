@@ -1,11 +1,10 @@
 /**
  * Header.jsx — RedCard Market Trading
  * Visibilidad por rol:
- *   Cartas       → Admin + Vendedor (no Comprador, no Invitado)
- *   Pagos        → Admin + Comprador (no Vendedor, no Invitado)
- *   Reportes     → solo Vendedor
+ *   Cartas       → Admin + Vendedor
+ *   Pagos        → Admin + Comprador
+ *   Reportes     → solo Admin
  *   Usuarios     → solo Admin
- *   Gestión menu → oculto para Invitado (sin items visibles = no se muestra)
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -16,6 +15,7 @@ import {
   BarChart2,
 } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
+import { Info, Edit } from "lucide-react";
 
 // ─── Pokeball 3D ──────────────────────────────────────────────────────────────
 function Pokeball3D() {
@@ -59,7 +59,6 @@ function NavDropdown({ trigger, items, align = "left" }) {
   const closeTimer = useRef(null);
 
   const visibleItems = items.filter(i => i.show);
-  // Si no hay items visibles, no renderizar el dropdown
   if (visibleItems.length === 0) return null;
 
   const onEnter = () => { clearTimeout(closeTimer.current); setOpen(true); };
@@ -202,25 +201,46 @@ export default function Header() {
 
   // ── Subastas (visible para todos) ──
   const navItems = [
-    { title: "Subastas Activas",     href: "/subasta/SubastasActivas",    icon: ic(Zap),         show: true, badge: "LIVE" },
+    { title: "Subastas Activas",     href: "/subasta/SubastasActivas",     icon: ic(Zap),         show: true, badge: "LIVE" },
     { title: "Subastas Finalizadas", href: "/subasta/SubastasFinalizadas", icon: ic(CheckCircle), show: true },
   ];
 
-  // ── Gestión (Admin + Vendedor solamente) ──
+  // ── Gestión ──
   const mantItems = [
-    { title: "Subastas Activas",     href: "/subasta/SubastasActivas",    icon: ic(Zap),           show: true },
+    { title: "Subastas Activas",     href: "/subasta/SubastasActivas",     icon: ic(Zap),           show: true },
     { title: "Subastas Finalizadas", href: "/subasta/SubastasFinalizadas", icon: ic(CheckCircle),   show: true },
-    { title: "Cartas",               href: "/carta",                      icon: ic(ShoppingBasket), show: authorize(["Administrador","Vendedor"]) },
-    { title: "Usuarios",             href: "/usuario/table",              icon: ic(ChartArea),      show: authorize(["Administrador"]) },
-    { title: "Pagos",                href: "/facturacion",                icon: ic(CreditCard),     show: authorize(["Administrador","Comprador"]) },
-    { title: "Reportes",             href: "/reportes",                   icon: ic(BarChart2),      show: authorize(["Vendedor"]) },
-    { title: "Historial Pujas",      href: "/historial",                  icon: ic(BarChart2),      show: authorize(["Comprador"]) },
+    { title: "Cartas",               href: "/carta",                       icon: ic(ShoppingBasket), show: authorize(["Administrador","Vendedor"]) },
+    { title: "Usuarios",             href: "/usuario/table",               icon: ic(ChartArea),      show: authorize(["Administrador"]) },
+    { title: "Pagos",                href: "/facturacion",                 icon: ic(CreditCard),     show: authorize(["Administrador","Comprador"]) },
+
+    // ✅ CAMBIO: ahora Reportes solo es para Administrador
+    // ✅ CAMBIO: usa la ruta nueva /admin/reportes
+    { title: "Reportes",             href: "/admin/reportes",              icon: ic(BarChart2),      show: authorize(["Administrador"]) },
+
+    // ✅ CAMBIO: eliminado el reporte para vendedor
+    // { title: "Reportes", href: "/reportes", icon: ic(BarChart2), show: authorize(["Vendedor"]) },
+
+    // ✅ CAMBIO: eliminado historial para comprador
+    // { title: "Historial Pujas", href: "/historial", icon: ic(BarChart2), show: authorize(["Comprador"]) },
   ];
 
   // ── Cuenta ──
   const userItems = [
     { title: "Iniciar Sesión",    href: "/usuario/login",  icon: ic(LogIn),    show: esInvitado },
     { title: "Registrarse",       href: "/usuario/create", icon: ic(UserPlus), show: esInvitado },
+{ 
+  title: "Mi Perfil", 
+  href: `/usuario/detail/${user?.idUsuario}`, 
+  icon: ic(Info), 
+  show: isAuthenticated 
+},
+
+{ 
+  title: "Editar Perfil", 
+  href: `/usuario/edit/${user?.idUsuario}`, 
+  icon: ic(Edit), 
+  show: isAuthenticated 
+},
     { title: "Registrar Usuario", href: "/usuario/create", icon: ic(UserPlus), show: isAdmin },
     { title: "Cerrar Sesión",     href: "#login",          icon: ic(LogOut),   show: isAuthenticated, action: clearUser, danger: true },
   ];
@@ -273,7 +293,6 @@ export default function Header() {
         fontFamily: "'DM Sans','Segoe UI',sans-serif",
       }}>
 
-        {/* ── Barra principal ── */}
         <div style={{
           position: "relative", overflow: "visible",
           height: 80,
@@ -286,20 +305,17 @@ export default function Header() {
 
           <StarCanvas />
 
-          {/* Línea dorada top */}
           <div style={{
             position: "absolute", top: 0, left: 0, right: 0, height: 2.5, zIndex: 2, pointerEvents: "none",
             background: "linear-gradient(90deg,transparent 0%,rgba(255,204,0,.8) 25%,rgba(200,120,255,.6) 65%,transparent 100%)",
           }}/>
 
-          {/* Scan Pokédex */}
           <div className="hdr-scan" style={{
             position: "absolute", top: 0, left: 0, width: "22%", height: "100%",
             background: "linear-gradient(90deg,transparent,rgba(255,204,0,.06),transparent)",
             pointerEvents: "none", zIndex: 1,
           }}/>
 
-          {/* Inner */}
           <div style={{
             position: "relative", zIndex: 3,
             display: "flex", alignItems: "center", justifyContent: "space-between",
@@ -307,7 +323,6 @@ export default function Header() {
             maxWidth: 1360, margin: "0 auto",
           }}>
 
-            {/* LOGO */}
             <Link to="/" style={{ display:"flex", alignItems:"center", gap:13, textDecoration:"none", flexShrink:0 }}>
               <Pokeball3D />
               <div style={{ display:"flex", flexDirection:"column", gap:1 }}>
@@ -329,18 +344,15 @@ export default function Header() {
               </div>
             </Link>
 
-            {/* NAV DESKTOP */}
             <nav className="hdr-nav" style={{ alignItems: "center", gap: 4 }}>
 
               <div style={{ width: 1, height: 24, background: "rgba(255,204,0,.14)", margin: "0 8px" }}/>
 
-              {/* Subastas — siempre visible */}
               <NavDropdown
                 trigger={<><Zap style={{ width:14, height:14, color:"rgba(255,204,0,.8)" }}/> Subastas</>}
                 items={navItems}
               />
 
-              {/* Gestión — solo si hay items visibles (Admin/Vendedor/Comprador según item) */}
               <NavDropdown
                 trigger={<><Layers style={{ width:14, height:14, color:"rgba(255,204,0,.8)" }}/> Gestión</>}
                 items={mantItems}
@@ -348,7 +360,6 @@ export default function Header() {
 
               <div style={{ width: 1, height: 24, background: "rgba(255,204,0,.14)", margin: "0 8px" }}/>
 
-              {/* Avatar + cuenta */}
               <NavDropdown
                 align="right"
                 trigger={
@@ -374,7 +385,6 @@ export default function Header() {
               />
             </nav>
 
-            {/* MOBILE TOGGLE */}
             <button
               className="hdr-mob"
               onClick={() => setMobileOpen(v => !v)}
@@ -392,7 +402,6 @@ export default function Header() {
           </div>
         </div>
 
-        {/* MOBILE DRAWER */}
         {mobileOpen && (
           <div style={{
             background: "rgba(3,2,12,.98)", backdropFilter: "blur(36px)",

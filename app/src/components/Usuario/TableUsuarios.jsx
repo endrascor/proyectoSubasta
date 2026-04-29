@@ -14,6 +14,8 @@ import { LoadingGrid }  from "../ui/custom/LoadingGrid";
 import { ErrorAlert }   from "../ui/custom/ErrorAlert";
 import { EmptyState }   from "../ui/custom/EmptyState";
 import toast from "react-hot-toast";
+import { useUser } from "@/hooks/useUser";
+
 
 const usuarioColumns = [
   { key: "nombre",   label: "Nombre"   },
@@ -97,6 +99,8 @@ function animateRowStrips(canvas, toBlocked, onMidpoint) {
 }
 
 export default function TableUsuarios() {
+  const { user, authorize } = useUser();
+const isAdmin = authorize(["Administrador"]);
   const navigate   = useNavigate();
   const canvasRefs = useRef({});
 
@@ -296,7 +300,13 @@ export default function TableUsuarios() {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Button variant="ghost" size="icon"
-                            onClick={() => navigate(`/usuario/edit/${usuario.idUsuario}`)}
+                           onClick={() => {
+  if (isAdmin || user.idUsuario === usuario.idUsuario) {
+    navigate(`/usuario/edit/${usuario.idUsuario}`);
+  } else {
+    toast.error("No puedes editar otros usuarios");
+  }
+}}
                             className="w-8 h-8 rounded-xl bg-white/[0.03] hover:bg-blue-500/20 border border-white/[0.06] hover:border-blue-500/30 text-white/30 hover:text-blue-400 transition-all duration-200">
                             <Edit className="w-3.5 h-3.5" />
                           </Button>
@@ -309,7 +319,11 @@ export default function TableUsuarios() {
                         <TooltipTrigger asChild>
                           <Button variant="ghost" size="icon"
                             onClick={() => handleToggle(usuario)}
-                            disabled={esInactivo || !!animando[usuario.idUsuario]}
+                           disabled={
+  esInactivo ||
+  !!animando[usuario.idUsuario] ||
+  user.idUsuario === usuario.idUsuario
+}
                             className={`
                               w-8 h-8 rounded-xl border transition-all duration-200
                               disabled:opacity-25 disabled:cursor-not-allowed

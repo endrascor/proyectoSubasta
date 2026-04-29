@@ -40,7 +40,10 @@ delete(subasta) {
 
     })
   }
-
+  getSubastasByUsuario(usuarioId) {
+    return axios.get(BASE_URL + "/getSubastasByUsuario/" + usuarioId);
+  }
 }
+
 
 export default new SubastaService();

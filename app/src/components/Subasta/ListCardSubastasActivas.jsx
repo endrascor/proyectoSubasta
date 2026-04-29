@@ -1,35 +1,22 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
+  Tooltip, TooltipContent, TooltipTrigger, TooltipProvider,
 } from "@/components/ui/tooltip";
 import {
-  Globe,
-  Info,
-  FilmIcon,
-  Zap,
-  Sparkles,
-  Clock,
-  Pencil,
-  Trash2,
-  X,
-  AlertTriangle,
-  Gavel,
-  User,
-  TrendingUp,
+  Globe, Info, FilmIcon, Zap, Sparkles, Clock,
+  Pencil, Trash2, X, AlertTriangle, Gavel, User,
+  TrendingUp, Star,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import SubastaService from "@/services/SubastaService";
 import toast from "react-hot-toast";
-import { useUser } from "@/hooks/useUser"; // ← NUEVO
+import { useUser } from "@/hooks/useUser";
 
 /* ══════════════════════════════════════
-   BADGE DE ESTADO
+   BADGE ESTADO
 ══════════════════════════════════════ */
 function EstadoBadge({ descripcion }) {
   const styles = {
@@ -47,7 +34,7 @@ function EstadoBadge({ descripcion }) {
 EstadoBadge.propTypes = { descripcion: PropTypes.string };
 
 /* ══════════════════════════════════════
-   MODAL CONFIRMAR CANCELAR
+   MODAL CANCELAR
 ══════════════════════════════════════ */
 function DeleteModalSubasta({ item, onClose, onConfirmed }) {
   const [loading, setLoading] = useState(false);
@@ -56,14 +43,13 @@ function DeleteModalSubasta({ item, onClose, onConfirmed }) {
     setLoading(true);
     try {
       const response = await SubastaService.delete({
-        idSubasta:       item.idSubasta,
-        idEstadoSubasta: 3,
+        idSubasta: item.idSubasta, idEstadoSubasta: 3,
       });
       if (response?.data?.success) {
         toast.success(`Subasta #${item.idSubasta} cancelada correctamente`);
         onConfirmed();
       } else {
-        toast.error(response?.data?.message || "No se pudo cancelar la subasta");
+        toast.error(response?.data?.message || "No se pudo cancelar");
       }
     } catch (err) {
       console.error(err);
@@ -105,8 +91,7 @@ function DeleteModalSubasta({ item, onClose, onConfirmed }) {
             className="flex-1 rounded-xl bg-red-500 hover:bg-red-400 text-white font-bold text-sm shadow-lg shadow-red-500/20 hover:scale-[1.02] transition-all flex items-center justify-center gap-2">
             {loading
               ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-              : <Trash2 className="w-4 h-4" />
-            }
+              : <Trash2 className="w-4 h-4" />}
             {loading ? "Cancelando..." : "Cancelar Subasta"}
           </Button>
         </div>
@@ -115,13 +100,12 @@ function DeleteModalSubasta({ item, onClose, onConfirmed }) {
   );
 }
 DeleteModalSubasta.propTypes = {
-  item:        PropTypes.shape({ idSubasta: PropTypes.number }),
-  onClose:     PropTypes.func,
-  onConfirmed: PropTypes.func,
+  item: PropTypes.shape({ idSubasta: PropTypes.number }),
+  onClose: PropTypes.func, onConfirmed: PropTypes.func,
 };
 
 /* ══════════════════════════════════════
-   IMAGEN CARTA — estilo TCG
+   IMAGEN CARTA TCG
 ══════════════════════════════════════ */
 function CartaImageTCG({ carta, BASE_URL }) {
   if (!carta?.imagenes?.length) {
@@ -140,27 +124,109 @@ function CartaImageTCG({ carta, BASE_URL }) {
   );
 }
 CartaImageTCG.propTypes = {
-  carta:    PropTypes.shape({ nombre: PropTypes.string, imagenes: PropTypes.array }),
+  carta: PropTypes.shape({ nombre: PropTypes.string, imagenes: PropTypes.array }),
   BASE_URL: PropTypes.string,
 };
 
 /* ══════════════════════════════════════
+   SWITCH — mismo estilo visual que el Header
+══════════════════════════════════════ */
+function MisSubastasSwitch({ value, onChange }) {
+  return (
+    <button
+      onClick={() => onChange(!value)}
+      style={{
+        display: "flex", alignItems: "center", gap: 8,
+        padding: "7px 14px", borderRadius: 10,
+        background: value ? "rgba(255,204,0,.13)" : "rgba(255,255,255,.05)",
+        border: `1px solid ${value ? "rgba(255,204,0,.45)" : "rgba(255,255,255,.12)"}`,
+        cursor: "pointer", transition: "all .18s",
+        fontFamily: "'DM Sans','Segoe UI',sans-serif",
+        color: value ? "#ffcc00" : "rgba(255,255,255,.5)",
+        fontSize: 13, fontWeight: 600,
+        whiteSpace: "nowrap",
+      }}
+      onMouseEnter={e => {
+        if (!value) {
+          e.currentTarget.style.borderColor = "rgba(255,204,0,.3)";
+          e.currentTarget.style.color = "rgba(255,255,255,.8)";
+        }
+      }}
+      onMouseLeave={e => {
+        if (!value) {
+          e.currentTarget.style.borderColor = "rgba(255,255,255,.12)";
+          e.currentTarget.style.color = "rgba(255,255,255,.5)";
+        }
+      }}
+    >
+      {/* Toggle pill */}
+      <span style={{
+        position: "relative", display: "inline-block",
+        width: 32, height: 18, borderRadius: 999,
+        background: value ? "rgba(255,204,0,.3)" : "rgba(255,255,255,.1)",
+        border: `1px solid ${value ? "rgba(255,204,0,.5)" : "rgba(255,255,255,.15)"}`,
+        transition: "all .2s", flexShrink: 0,
+      }}>
+        <span style={{
+          position: "absolute", top: 2,
+          left: value ? 14 : 2,
+          width: 12, height: 12, borderRadius: "50%",
+          background: value ? "#ffcc00" : "rgba(255,255,255,.4)",
+          transition: "left .2s, background .2s",
+          boxShadow: value ? "0 0 6px rgba(255,204,0,.6)" : "none",
+        }}/>
+      </span>
+      <Star style={{ width: 12, height: 12 }} />
+      Mis subastas
+    </button>
+  );
+}
+MisSubastasSwitch.propTypes = { value: PropTypes.bool, onChange: PropTypes.func };
+
+/* ══════════════════════════════════════
    COMPONENTE PRINCIPAL
 ══════════════════════════════════════ */
-export function ListCardSubastasActivas({ data, onRefresh }) {
-  const BASE_URL = import.meta.env.VITE_BASE_URL + "uploads";
-  const navigate = useNavigate();
-
-  // ← NUEVO: obtener rol del usuario logueado
+export function ListCardSubastasActivas({ data, onRefresh, currentUser }) {
+  const BASE_URL   = import.meta.env.VITE_BASE_URL + "uploads";
+  const navigate   = useNavigate();
   const { authorize } = useUser();
-  const puedeGestionar = authorize(["Administrador", "Vendedor"]);
 
+  const isAdmin    = authorize(["Administrador"]);
+  const isVendedor = authorize(["Vendedor"]);
+
+  // Switch "solo mis subastas" — solo visible para Vendedor
+  const [soloMias, setSoloMias] = useState(false);
   const [deleteItem, setDeleteItem] = useState(null);
 
   const isInactive = (item) => {
     const desc = item.estadoSubasta?.descripcion?.toLowerCase();
     return desc === "cancelada" || desc === "finalizada";
   };
+
+  // ── Ordenar: propias primero, luego el resto ──
+  // ── Filtrar si soloMias está activo ──
+  const dataOrdenada = useMemo(() => {
+    if (!data) return [];
+
+    const esMia = (item) =>
+      String(item.creador?.idUsuario ?? item.idUsuario) === String(currentUser?.idUsuario);
+
+    let lista = [...data];
+
+    // Filtrar si el switch está activo
+    if (soloMias && isVendedor) {
+      lista = lista.filter(esMia);
+    } else {
+      // Ordenar: propias al frente
+      lista.sort((a, b) => {
+        const aMia = esMia(a) ? 0 : 1;
+        const bMia = esMia(b) ? 0 : 1;
+        return aMia - bMia;
+      });
+    }
+
+    return lista;
+  }, [data, soloMias, currentUser?.idUsuario, isVendedor]);
 
   const handleDeleteConfirmed = () => {
     setDeleteItem(null);
@@ -171,19 +237,60 @@ export function ListCardSubastasActivas({ data, onRefresh }) {
     <>
       <div className="min-h-screen bg-gradient-to-br from-[#020617] via-[#020617] to-[#0f172a]">
 
-        {/* HEADER */}
-        <div className="flex items-center justify-between px-6 pt-6 pb-2">
-          <h1 className="text-2xl font-bold text-white/90 tracking-tight flex items-center gap-2">
-            <Gavel className="w-5 h-5 text-yellow-400" />
+        {/* ── HEADER con switch ── */}
+        <div style={{
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+          flexWrap: "wrap", gap: 12,
+          padding: "24px 24px 8px",
+        }}>
+          <h1 style={{
+            margin: 0, display: "flex", alignItems: "center", gap: 8,
+            fontSize: 22, fontWeight: 700, color: "rgba(255,255,255,.9)",
+            fontFamily: "'DM Sans','Segoe UI',sans-serif", letterSpacing: ".01em",
+          }}>
+            <Gavel style={{ width: 20, height: 20, color: "#facc15" }} />
             Subastas
+            {soloMias && isVendedor && (
+              <span style={{
+                fontSize: 11, padding: "2px 10px", borderRadius: 20,
+                background: "rgba(255,204,0,.12)", color: "#ffcc00",
+                border: "1px solid rgba(255,204,0,.3)",
+                fontWeight: 700, letterSpacing: ".06em",
+              }}>
+                MIS SUBASTAS
+              </span>
+            )}
           </h1>
+
+          {/* Switch solo para Vendedor */}
+          {isVendedor && (
+            <MisSubastasSwitch value={soloMias} onChange={setSoloMias} />
+          )}
         </div>
 
-        {/* GRID */}
+        {/* ── Sin resultados tras filtrar ── */}
+        {dataOrdenada.length === 0 && (
+          <div style={{
+            textAlign: "center", padding: "60px 20px",
+            color: "rgba(255,255,255,.25)", fontSize: 14,
+            fontFamily: "'DM Sans',sans-serif",
+          }}>
+            {soloMias ? "No tienes subastas activas." : "No hay subastas activas."}
+          </div>
+        )}
+
+        {/* ── GRID ── */}
         <div className="grid gap-8 p-6 sm:grid-cols-2 lg:grid-cols-3">
-          {data && data.map((item) => {
+          {dataOrdenada.map((item) => {
             const inactive   = isInactive(item);
             const tienePujas = Number(item.cantidadPujas) > 0;
+
+            // ¿Es esta subasta del usuario actual?
+            const esDueno =
+              String(item.creador?.idUsuario ?? item.idUsuario) === String(currentUser?.idUsuario);
+
+            // Puede editar/cancelar: Admin siempre, Vendedor solo las suyas
+            const puedeGestionar = isAdmin || (isVendedor && esDueno);
 
             return (
               <Card
@@ -199,13 +306,28 @@ export function ListCardSubastasActivas({ data, onRefresh }) {
                   }
                 `}
               >
+                {/* Hover glow */}
                 <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition duration-500 bg-gradient-to-br from-yellow-400/15 via-yellow-300/5 to-transparent pointer-events-none" />
                 <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition duration-300 pointer-events-none ring-2 ring-yellow-400/30 blur-[2px]" />
 
-                {/* Badge estado */}
-                <div className="absolute top-3 left-3 z-20">
-                  <EstadoBadge descripcion={item.estadoSubasta?.descripcion} />
-                </div>
+                {/* Badge "Mi subasta" — solo si es del vendedor logueado */}
+                {esDueno && isVendedor && (
+                  <div className="absolute top-3 left-3 z-20 flex gap-1.5">
+                    <EstadoBadge descripcion={item.estadoSubasta?.descripcion} />
+                    <span style={{
+                      padding: "2px 8px", borderRadius: 999, fontSize: 10, fontWeight: 700,
+                      background: "rgba(255,204,0,.18)", color: "#ffcc00",
+                      border: "1px solid rgba(255,204,0,.4)",
+                    }}>
+                      ★ Mía
+                    </span>
+                  </div>
+                )}
+                {(!esDueno || !isVendedor) && (
+                  <div className="absolute top-3 left-3 z-20">
+                    <EstadoBadge descripcion={item.estadoSubasta?.descripcion} />
+                  </div>
+                )}
 
                 {/* ID */}
                 <div className="absolute top-3 right-3 z-20 bg-black/50 text-white/50 text-[10px] font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
@@ -231,7 +353,6 @@ export function ListCardSubastasActivas({ data, onRefresh }) {
 
                 {/* CONTENT */}
                 <CardContent className="space-y-3 pt-2 pb-4 text-white relative z-10 px-5">
-
                   <div className="grid grid-cols-2 gap-2">
                     <div className="bg-white/[0.04] rounded-xl px-3 py-2 border border-white/8">
                       <p className="text-white/40 text-[10px] uppercase tracking-widest">Precio base</p>
@@ -282,11 +403,9 @@ export function ListCardSubastasActivas({ data, onRefresh }) {
                 {/* BOTONES */}
                 <div className="flex justify-between items-center border-t border-white/10 p-3 relative z-10 bg-white/5 backdrop-blur-md">
 
-                  {/* ← NUEVO: botones editar/cancelar solo para Admin y Vendedor */}
                   <div className="flex gap-2">
                     {puedeGestionar && (
                       <TooltipProvider>
-
                         {/* EDITAR */}
                         <Tooltip>
                           <TooltipTrigger asChild>
@@ -320,12 +439,11 @@ export function ListCardSubastasActivas({ data, onRefresh }) {
                               : "Cancelar subasta"}
                           </TooltipContent>
                         </Tooltip>
-
                       </TooltipProvider>
                     )}
                   </div>
 
-                  {/* DETALLE — siempre visible para todos */}
+                  {/* INFO — siempre visible */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -335,7 +453,7 @@ export function ListCardSubastasActivas({ data, onRefresh }) {
                           </Button>
                         </Link>
                       </TooltipTrigger>
-                      <TooltipContent>Realizar puja y ver detalles</TooltipContent>
+                      <TooltipContent>Ver detalles y pujar</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
 
@@ -359,6 +477,7 @@ export function ListCardSubastasActivas({ data, onRefresh }) {
 }
 
 ListCardSubastasActivas.propTypes = {
-  data:      PropTypes.array,
-  onRefresh: PropTypes.func,
+  data:        PropTypes.array,
+  onRefresh:   PropTypes.func,
+  currentUser: PropTypes.object,
 };

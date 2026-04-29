@@ -63,4 +63,22 @@ class PujaModel
             handleException($e);
         }
     }
+
+ public function getPujasByUsuario($idUsuario)
+{
+    try {
+        $subastaM = new SubastaModel();
+        $vSql = "SELECT * FROM puja WHERE idUsuario = $idUsuario ORDER BY fechaPuja DESC";
+        $vResultado = $this->enlace->ExecuteSQL($vSql);
+        
+        if (!empty($vResultado) && is_array($vResultado)) {
+            for ($i = 0; $i < count($vResultado); $i++) {
+                $vResultado[$i]->subasta = $subastaM->get($vResultado[$i]->idSubasta);
+            }
+        }
+        return $vResultado;
+    } catch (Exception $e) {
+        handleException($e);
+    }
+}
 }

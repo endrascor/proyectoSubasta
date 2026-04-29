@@ -106,4 +106,16 @@ class puja
             handleException($e);
         }
     }
+
+  public function getPujasByUsuario($idUsuario)
+{
+    try {
+        $response = new Response();
+        $puja = new PujaModel();
+        $result = $puja->getPujasByUsuario($idUsuario);
+        $response->toJSON($result);
+    } catch (Exception $e) {
+        handleException($e);
+    }
+}
 }

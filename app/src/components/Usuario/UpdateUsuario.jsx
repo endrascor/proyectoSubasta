@@ -5,6 +5,10 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 
+
+import { useUser } from "@/hooks/useUser";
+
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +21,7 @@ import UsuarioService from "../../services/UsuarioService";
 export function UpdateUsuario() {
   const navigate = useNavigate();
   const { id }   = useParams();
+  const { user, authorize } = useUser();
   const [error, setError] = useState("");
 
   /* ── Validación ── */
@@ -31,21 +36,23 @@ export function UpdateUsuario() {
   });
 
   /* ── Cargar datos ── */
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usuarioRes = await UsuarioService.getUsuarioById(id);
-        if (usuarioRes.data) {
-          const usuario = usuarioRes.data.data;
-          reset({ nombre: usuario.nombre, email: usuario.email });
-        }
-      } catch (err) {
-        console.error(err);
-        setError("Error cargando datos");
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const res = await UsuarioService.getUsuarioById(id);
+
+      if (res.data) {
+        const u = res.data.data;
+        reset({ nombre: u.nombre, email: u.email });
       }
-    };
-    fetchData();
-  }, [id, reset]);
+    } catch (err) {
+      console.error(err);
+      setError("Error cargando datos");
+    }
+  };
+
+  fetchData();
+}, [id, reset]);
 
   /* ── Submit ── */
   const onSubmit = async (dataForm) => {
