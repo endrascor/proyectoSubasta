@@ -2,6 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import Pusher from "pusher-js";
 import FacturacionService from "@/services/FacturacionService";
 import toast from "react-hot-toast";
+import { useUser } from "@/hooks/useUser"; // ← NUEVO
 import {
   CreditCard, CheckCircle, Clock, Trophy,
   User, Gavel, DollarSign, Calendar,
@@ -145,34 +146,59 @@ export function ListFacturacion() {
   const [newlyDone,   setNewlyDone]   = useState(new Set());
   const localRef = useRef(new Set());
 
+  // ← NUEVO: obtener usuario logueado y verificar si es admin
+  const { user, authorize } = useUser();
+  const isAdmin = authorize(["Administrador"]);
+
   useEffect(() => { injectCSS(); }, []);
 
-  /* Carga inicial — única vez */
-  useEffect(() => {
+  /* ─── Carga inicial filtrada por rol ─────────────────────────────────────
+     - Admin: trae todos los pagos (getAll)
+     - Otros: trae solo los pagos del usuario logueado (getByUsuario)
+  ─────────────────────────────────────────────────────────────────────── */
+useEffect(() => {
+    if (!user) {
+      setLoading(false); // ← invitado: dejar de cargar y mostrar vacío
+      return;
+    }
+
     const fetchData = async () => {
       try {
-        const res  = await FacturacionService.getAll();
+        let res;
+        if (isAdmin) {
+          // Admin ve todos los pagos
+          res = await FacturacionService.getAll();
+        } else {
+          // Comprador/Vendedor ve solo sus pagos
+          res = await FacturacionService.getByUsuario(user.idUsuario);
+        }
         const data = res.data?.data ?? res.data;
         setFacturas(Array.isArray(data) ? data : []);
-      } catch {
-        toast.error("Error al cargar pagos");
+      } catch (err) {
+      // 404 = sin pagos todavía, no mostrar toast
+      if (err?.response?.status !== 404) {
+      toast.error("Error al cargar pagos");
+        }
+       setFacturas([]);
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, []);
+  }, [user, isAdmin]);
 
-  /* Pusher — toda actualización posterior llega por acá */
+  /* Pusher — actualizaciones en tiempo real */
   useEffect(() => {
     const pusher  = new Pusher(import.meta.env.VITE_PUSHER_KEY, { cluster: import.meta.env.VITE_PUSHER_CLUSTER });
     const channel = pusher.subscribe("pagos");
 
-    /* Nuevo pago generado al cerrar una subasta */
     channel.bind("nuevo-pago", (data) => {
       if (data.facturacion) {
+        // ← NUEVO: si no es admin, solo agregar si el pago es del usuario logueado
+        const esDelUsuario = isAdmin || String(data.facturacion.idUsuario) === String(user?.idUsuario);
+        if (!esDelUsuario) return;
+
         setFacturas(prev => {
-          // Evitar duplicados si ya existe
           const existe = prev.some(f => String(f.idFacturacion) === String(data.facturacion.idFacturacion));
           if (existe) return prev;
           return [data.facturacion, ...prev];
@@ -181,7 +207,6 @@ export function ListFacturacion() {
       }
     });
 
-    /* Pago confirmado */
     channel.bind("pago-confirmado", (data) => {
       const fid = String(data.facturacion?.idFacturacion);
       setFacturas(p => p.map(f =>
@@ -194,7 +219,7 @@ export function ListFacturacion() {
     });
 
     return () => { channel.unbind_all(); pusher.unsubscribe("pagos"); pusher.disconnect(); };
-  }, []);
+  }, [user, isAdmin]);
 
   const markDone = (fid) => {
     setNewlyDone(p => new Set([...p, fid]));
@@ -230,7 +255,7 @@ export function ListFacturacion() {
     <div className="min-h-screen px-4 py-10 relative overflow-hidden"
       style={{ background:"linear-gradient(135deg,#020617 0%,#080d1a 50%,#020617 100%)" }}>
 
-      {/* Fondo */}
+      {/* Fondo decorativo */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 right-0 w-[650px] h-[650px] rounded-full"
           style={{ background:"radial-gradient(circle,rgba(250,204,21,.08) 0%,transparent 65%)", transform:"translate(30%,-30%)" }} />
@@ -242,29 +267,18 @@ export function ListFacturacion() {
           maskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)",
           WebkitMaskImage:"radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)",
         }} />
-        {[
-          { top:"15%", left:"8%",  s:3, c:"#facc15", op:.28, d:"0s"   },
-          { top:"72%", left:"5%",  s:2, c:"#34d399", op:.22, d:".5s"  },
-          { top:"35%", right:"6%", s:4, c:"#818cf8", op:.18, d:"1s"   },
-          { top:"58%", right:"12%",s:2, c:"#facc15", op:.22, d:"1.5s" },
-          { top:"88%", left:"20%", s:3, c:"#34d399", op:.14, d:".8s"  },
-          { top:"22%", left:"55%", s:2, c:"#f472b6", op:.15, d:"1.2s" },
-        ].map((p,i) => (
-          <div key={i} className="absolute rounded-full glow-dot"
-            style={{ top:p.top, left:p.left, right:p.right, width:p.s, height:p.s, background:p.c, opacity:p.op, animationDelay:p.d }} />
-        ))}
       </div>
 
       <div className="relative z-10 max-w-[1120px] mx-auto space-y-8">
 
-        {/* ── Header — SIN botón Actualizar ── */}
+        {/* ── Header ── */}
         <div className="fsu flex items-center gap-4">
           <div className="relative">
             <div className="w-14 h-14 rounded-2xl flex items-center justify-center pending-halo"
               style={{ background:"rgba(250,204,21,.1)", border:"1px solid rgba(250,204,21,.25)" }}>
               <CreditCard className="w-7 h-7" style={{ color:"#facc15" }} />
             </div>
-            <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full flex items-center justify-center"
+            <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full"
               style={{ background:"#facc15", boxShadow:"0 0 8px #facc15" }}>
               <div className="w-3 h-3 rounded-full ping-dot absolute" style={{ background:"#facc15" }} />
             </div>
@@ -273,14 +287,14 @@ export function ListFacturacion() {
             <div className="flex items-center gap-1.5 mb-0.5">
               <Sparkles className="w-3 h-3" style={{ color:"rgba(250,204,21,.55)" }} />
               <p className="m-0 text-[10px] font-black uppercase tracking-[.25em]" style={{ color:"rgba(255,255,255,.28)" }}>
-                Sistema de pagos
+                {/* ← NUEVO: subtítulo diferente según rol */}
+                {isAdmin ? "Todos los pagos" : "Mis pagos"}
               </p>
             </div>
             <h1 className="m-0 text-[28px] font-black tracking-tight leading-none" style={{ color:"#fff" }}>
               Registro de Pagos
             </h1>
           </div>
-          {/* Indicador tiempo real — informativo, sin acción */}
           <div className="ml-auto flex items-center gap-2 px-4 py-2 rounded-xl"
             style={{ border:"1px solid rgba(52,211,153,.2)", background:"rgba(52,211,153,.06)" }}>
             <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 ping-dot flex-shrink-0" />
@@ -325,7 +339,9 @@ export function ListFacturacion() {
               No hay pagos registrados
             </p>
             <p className="m-0 text-xs" style={{ color:"rgba(255,255,255,.15)" }}>
-              Los pagos se generan automáticamente al cerrar una subasta
+              {isAdmin
+                ? "Aún no se han generado pagos en el sistema"
+                : "Tus pagos aparecerán aquí cuando ganes una subasta"}
             </p>
           </div>
 
@@ -401,7 +417,8 @@ export function ListFacturacion() {
                     </div>
 
                     <div>
-                      {isPendiente ? (
+                      {/* ← NUEVO: solo Admin puede confirmar pagos */}
+                      {isPendiente && isAdmin ? (
                         <button
                           className="btn-confirm flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-black border"
                           style={{

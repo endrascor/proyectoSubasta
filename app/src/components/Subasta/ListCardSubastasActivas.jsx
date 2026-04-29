@@ -26,6 +26,7 @@ import { Link, useNavigate } from "react-router-dom";
 import PropTypes from "prop-types";
 import SubastaService from "@/services/SubastaService";
 import toast from "react-hot-toast";
+import { useUser } from "@/hooks/useUser"; // ← NUEVO
 
 /* ══════════════════════════════════════
    BADGE DE ESTADO
@@ -149,6 +150,10 @@ CartaImageTCG.propTypes = {
 export function ListCardSubastasActivas({ data, onRefresh }) {
   const BASE_URL = import.meta.env.VITE_BASE_URL + "uploads";
   const navigate = useNavigate();
+
+  // ← NUEVO: obtener rol del usuario logueado
+  const { authorize } = useUser();
+  const puedeGestionar = authorize(["Administrador", "Vendedor"]);
 
   const [deleteItem, setDeleteItem] = useState(null);
 
@@ -276,47 +281,51 @@ export function ListCardSubastasActivas({ data, onRefresh }) {
 
                 {/* BOTONES */}
                 <div className="flex justify-between items-center border-t border-white/10 p-3 relative z-10 bg-white/5 backdrop-blur-md">
+
+                  {/* ← NUEVO: botones editar/cancelar solo para Admin y Vendedor */}
                   <div className="flex gap-2">
-                    <TooltipProvider>
+                    {puedeGestionar && (
+                      <TooltipProvider>
 
-                      {/* EDITAR — bloqueado si inactiva o tiene pujas */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="icon"
-                            onClick={() => navigate(`/subasta/edit/${item.idSubasta}`)}
-                            disabled={inactive || tienePujas}
-                            className="w-8 h-8 rounded-full bg-white/10 hover:bg-blue-500/80 border border-white/20 text-white/70 hover:text-white shadow hover:scale-110 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-white/10">
-                            <Pencil className="w-3.5 h-3.5" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {inactive ? "Reactiva para editar"
-                            : tienePujas ? "No se puede editar con pujas activas"
-                            : "Editar"}
-                        </TooltipContent>
-                      </Tooltip>
+                        {/* EDITAR */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size="icon"
+                              onClick={() => navigate(`/subasta/edit/${item.idSubasta}`)}
+                              disabled={inactive || tienePujas}
+                              className="w-8 h-8 rounded-full bg-white/10 hover:bg-blue-500/80 border border-white/20 text-white/70 hover:text-white shadow hover:scale-110 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-white/10">
+                              <Pencil className="w-3.5 h-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {inactive ? "Reactiva para editar"
+                              : tienePujas ? "No se puede editar con pujas activas"
+                              : "Editar"}
+                          </TooltipContent>
+                        </Tooltip>
 
-                      {/* CANCELAR — bloqueado si inactiva o tiene pujas */}
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button size="icon"
-                            onClick={() => setDeleteItem(item)}
-                            disabled={inactive || tienePujas}
-                            className="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/80 border border-white/20 text-white/70 hover:text-white shadow hover:scale-110 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-white/10">
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          {inactive ? "Ya está cancelada"
-                            : tienePujas ? "No se puede cancelar con pujas activas"
-                            : "Cancelar subasta"}
-                        </TooltipContent>
-                      </Tooltip>
+                        {/* CANCELAR */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button size="icon"
+                              onClick={() => setDeleteItem(item)}
+                              disabled={inactive || tienePujas}
+                              className="w-8 h-8 rounded-full bg-white/10 hover:bg-red-500/80 border border-white/20 text-white/70 hover:text-white shadow hover:scale-110 transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:bg-white/10">
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            {inactive ? "Ya está cancelada"
+                              : tienePujas ? "No se puede cancelar con pujas activas"
+                              : "Cancelar subasta"}
+                          </TooltipContent>
+                        </Tooltip>
 
-                    </TooltipProvider>
+                      </TooltipProvider>
+                    )}
                   </div>
 
-                  {/* DETALLE — siempre activo */}
+                  {/* DETALLE — siempre visible para todos */}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -329,6 +338,7 @@ export function ListCardSubastasActivas({ data, onRefresh }) {
                       <TooltipContent>Realizar puja y ver detalles</TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
+
                 </div>
               </Card>
             );
