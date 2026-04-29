@@ -208,11 +208,13 @@ export default function Header() {
 
   // ── Gestión (Admin + Vendedor solamente) ──
   const mantItems = [
-    { title: "Cartas",           href: "/carta",          icon: ic(ShoppingBasket), show: isAdmin || isVendedor },
-    { title: "Usuarios",         href: "/usuario/table",  icon: ic(ChartArea),      show: isAdmin },
-    { title: "Pagos",            href: "/facturacion",    icon: ic(CreditCard),     show: isAdmin || isComprador },
-    { title: "Reportes",         href: "/reportes",       icon: ic(BarChart2),      show: isVendedor },
-    { title: "Historial Pujas",  href: "/historial",      icon: ic(BarChart2),      show: isComprador },
+    { title: "Subastas Activas",     href: "/subasta/SubastasActivas",    icon: ic(Zap),           show: true },
+    { title: "Subastas Finalizadas", href: "/subasta/SubastasFinalizadas", icon: ic(CheckCircle),   show: true },
+    { title: "Cartas",               href: "/carta",                      icon: ic(ShoppingBasket), show: authorize(["Administrador","Vendedor"]) },
+    { title: "Usuarios",             href: "/usuario/table",              icon: ic(ChartArea),      show: authorize(["Administrador"]) },
+    { title: "Pagos",                href: "/facturacion",                icon: ic(CreditCard),     show: authorize(["Administrador","Comprador"]) },
+    { title: "Reportes",             href: "/reportes",                   icon: ic(BarChart2),      show: authorize(["Vendedor"]) },
+    { title: "Historial Pujas",      href: "/historial",                  icon: ic(BarChart2),      show: authorize(["Comprador"]) },
   ];
 
   // ── Cuenta ──
