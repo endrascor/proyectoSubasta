@@ -1,8 +1,11 @@
 /**
  * Header.jsx — RedCard Market Trading
- * SIN shadcn/Menubar — todo custom
- * Pokeball 3D girando CSS puro
- * Sin línea azul, tamaño correcto, dropdowns estables
+ * Visibilidad por rol:
+ *   Cartas       → Admin + Vendedor (no Comprador, no Invitado)
+ *   Pagos        → Admin + Comprador (no Vendedor, no Invitado)
+ *   Reportes     → solo Vendedor
+ *   Usuarios     → solo Admin
+ *   Gestión menu → oculto para Invitado (sin items visibles = no se muestra)
  */
 
 import { useState, useEffect, useRef } from "react";
@@ -10,6 +13,7 @@ import { Link, useLocation } from "react-router-dom";
 import {
   Zap, Layers, ChartArea, LogIn, UserPlus,
   LogOut, Menu, X, ShoppingBasket, CreditCard, CheckCircle,
+  BarChart2,
 } from "lucide-react";
 import { useUser } from "@/hooks/useUser";
 
@@ -22,7 +26,6 @@ function Pokeball3D() {
       animation: "pokeRotate 4s linear infinite, pokeGlow 3s ease-in-out infinite",
       cursor: "pointer",
     }}>
-      {/* Superior morado */}
       <div style={{
         position: "absolute", top: 0, left: 0, right: 0, height: "50%",
         background: "linear-gradient(140deg,#1a0050 0%,#5b21b6 40%,#7c3aed 70%,#9333ea 100%)",
@@ -31,16 +34,13 @@ function Pokeball3D() {
         <div style={{ position:"absolute", top:7, left:8, width:6, height:6, borderRadius:"50%", background:"rgba(255,140,255,.98)", boxShadow:"0 0 8px rgba(255,60,255,.9)" }}/>
         <div style={{ position:"absolute", top:7, right:8, width:6, height:6, borderRadius:"50%", background:"rgba(255,140,255,.98)", boxShadow:"0 0 8px rgba(255,60,255,.9)" }}/>
       </div>
-      {/* Inferior gris */}
       <div style={{
         position: "absolute", bottom: 0, left: 0, right: 0, height: "50%",
         background: "linear-gradient(135deg,#e4e4e7 0%,#a1a1aa 55%,#71717a 100%)",
       }}>
         <div style={{ position:"absolute", bottom:5, right:7, width:9, height:5, borderRadius:"50%", background:"rgba(255,255,255,.5)", filter:"blur(2px)" }}/>
       </div>
-      {/* Línea central */}
       <div style={{ position:"absolute", top:"50%", left:0, right:0, height:3.5, background:"#06060f", transform:"translateY(-50%)", zIndex:3 }}/>
-      {/* Botón central */}
       <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center", zIndex:4 }}>
         <div style={{
           width:15, height:15, borderRadius:"50%", border:"3px solid #06060f",
@@ -48,7 +48,6 @@ function Pokeball3D() {
           boxShadow:"inset 0 2px 4px rgba(0,0,0,.3)",
         }}/>
       </div>
-      {/* Reflejo */}
       <div style={{ position:"absolute", inset:0, borderRadius:"50%", background:"linear-gradient(140deg,rgba(255,255,255,.2) 0%,transparent 52%)", pointerEvents:"none", zIndex:5 }}/>
     </div>
   );
@@ -59,17 +58,15 @@ function NavDropdown({ trigger, items, align = "left" }) {
   const [open, setOpen] = useState(false);
   const closeTimer = useRef(null);
 
-  const onEnter = () => {
-    clearTimeout(closeTimer.current);
-    setOpen(true);
-  };
-  const onLeave = () => {
-    closeTimer.current = setTimeout(() => setOpen(false), 120);
-  };
+  const visibleItems = items.filter(i => i.show);
+  // Si no hay items visibles, no renderizar el dropdown
+  if (visibleItems.length === 0) return null;
+
+  const onEnter = () => { clearTimeout(closeTimer.current); setOpen(true); };
+  const onLeave = () => { closeTimer.current = setTimeout(() => setOpen(false), 120); };
 
   return (
     <div style={{ position: "relative" }} onMouseEnter={onEnter} onMouseLeave={onLeave}>
-      {/* Trigger */}
       <button style={{
         display: "flex", alignItems: "center", gap: 7,
         padding: "8px 16px", borderRadius: 10,
@@ -89,7 +86,6 @@ function NavDropdown({ trigger, items, align = "left" }) {
         }}>▾</span>
       </button>
 
-      {/* Menú */}
       {open && (
         <div style={{
           position: "absolute",
@@ -103,10 +99,9 @@ function NavDropdown({ trigger, items, align = "left" }) {
           boxShadow: "0 28px 64px rgba(0,0,0,.8), inset 0 0 0 1px rgba(255,255,255,.04)",
           animation: "dropIn .18s ease-out",
         }}>
-          {/* Acento top */}
           <div style={{ height: 2, background: "linear-gradient(90deg,transparent,rgba(255,204,0,.7),rgba(180,100,255,.5),transparent)" }}/>
           <div style={{ padding: "6px" }}>
-            {items.filter(i => i.show).map((item, idx) => (
+            {visibleItems.map((item, idx) => (
               <Link
                 key={item.href + idx}
                 to={item.href}
@@ -188,6 +183,12 @@ export default function Header() {
   const location = useLocation();
   const email = user?.email || "Invitado";
 
+  // Helpers de rol
+  const isAdmin      = authorize(["Administrador"]);
+  const isVendedor   = authorize(["Vendedor"]);
+  const isComprador  = authorize(["Comprador"]);
+  const esInvitado   = !isAuthenticated;
+
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 16);
     window.addEventListener("scroll", fn, { passive: true });
@@ -199,30 +200,34 @@ export default function Header() {
   const S = { width: 14, height: 14 };
   const ic = I => <I style={S} />;
 
+  // ── Subastas (visible para todos) ──
   const navItems = [
-    { title: "Subastas Activas", href: "/subasta/SubastasActivas", icon: ic(Zap), show: true, badge: "LIVE" },
+    { title: "Subastas Activas",     href: "/subasta/SubastasActivas",    icon: ic(Zap),         show: true, badge: "LIVE" },
+    { title: "Subastas Finalizadas", href: "/subasta/SubastasFinalizadas", icon: ic(CheckCircle), show: true },
   ];
+
+  // ── Gestión (Admin + Vendedor solamente) ──
   const mantItems = [
-    { title: "Subastas Activas",     href: "/subasta/SubastasActivas",    icon: ic(Zap),           show: true },
-    { title: "Subastas Finalizadas", href: "/subasta/SubastasFinalizadas", icon: ic(CheckCircle),   show: true },
-    { title: "Cartas",               href: "/carta",                      icon: ic(ShoppingBasket), show: true },
-    { title: "Usuarios",             href: "/usuario/table",              icon: ic(ChartArea),      show: authorize(["Administrador"]) },
-    { title: "Pagos",                href: "/facturacion",                icon: ic(CreditCard),     show: true },
+    { title: "Cartas",           href: "/carta",          icon: ic(ShoppingBasket), show: isAdmin || isVendedor },
+    { title: "Usuarios",         href: "/usuario/table",  icon: ic(ChartArea),      show: isAdmin },
+    { title: "Pagos",            href: "/facturacion",    icon: ic(CreditCard),     show: isAdmin || isComprador },
+    { title: "Reportes",         href: "/reportes",       icon: ic(BarChart2),      show: isVendedor },
+    { title: "Historial Pujas",  href: "/historial",      icon: ic(BarChart2),      show: isComprador },
   ];
+
+  // ── Cuenta ──
   const userItems = [
-    { title: "Iniciar Sesión",    href: "/usuario/login",  icon: ic(LogIn),    show: !isAuthenticated },
-    { title: "Registrarse",       href: "/usuario/create", icon: ic(UserPlus), show: !isAuthenticated },
-    { title: "Registrar Usuario", href: "/usuario/create", icon: ic(UserPlus), show: authorize(["Administrador"]) },
+    { title: "Iniciar Sesión",    href: "/usuario/login",  icon: ic(LogIn),    show: esInvitado },
+    { title: "Registrarse",       href: "/usuario/create", icon: ic(UserPlus), show: esInvitado },
+    { title: "Registrar Usuario", href: "/usuario/create", icon: ic(UserPlus), show: isAdmin },
     { title: "Cerrar Sesión",     href: "#login",          icon: ic(LogOut),   show: isAuthenticated, action: clearUser, danger: true },
   ];
 
   return (
     <>
-      {/* ── Estilos globales del header ── */}
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap');
 
-        /* Pokeball rotando */
         @keyframes pokeRotate {
           from { transform: rotateY(0deg) rotateX(10deg); }
           to   { transform: rotateY(360deg) rotateX(10deg); }
@@ -231,14 +236,10 @@ export default function Header() {
           0%,100% { box-shadow: 0 0 0 2px rgba(255,204,0,.3), 0 0 22px rgba(255,204,0,.25), 0 6px 18px rgba(0,0,0,.85); }
           50%     { box-shadow: 0 0 0 3px rgba(255,204,0,.7), 0 0 40px rgba(255,204,0,.6),  0 6px 18px rgba(0,0,0,.85); }
         }
-
-        /* Dropdown aparece */
         @keyframes dropIn {
           from { opacity: 0; transform: translateY(-8px) scale(.97); }
           to   { opacity: 1; transform: translateY(0)    scale(1);   }
         }
-
-        /* Scan line */
         @keyframes scanLine {
           0%   { transform: translateX(-100%); opacity:0; }
           8%   { opacity: 1; }
@@ -247,7 +248,6 @@ export default function Header() {
         }
         .hdr-scan { animation: scanLine 4s ease-in-out infinite; animation-delay: 2s; }
 
-        /* Quitar TODO outline azul del header */
         #rct-hdr, #rct-hdr * {
           outline: none !important;
           -webkit-tap-highlight-color: transparent !important;
@@ -256,15 +256,13 @@ export default function Header() {
           outline: 1.5px solid rgba(255,204,0,.5) !important;
           outline-offset: 2px !important;
         }
-
-        /* Responsive */
         @media (max-width: 767px) {
-          .hdr-nav  { display: none  !important; }
-          .hdr-mob  { display: flex  !important; }
+          .hdr-nav { display: none  !important; }
+          .hdr-mob { display: flex  !important; }
         }
         @media (min-width: 768px) {
-          .hdr-nav  { display: flex  !important; }
-          .hdr-mob  { display: none  !important; }
+          .hdr-nav { display: flex  !important; }
+          .hdr-mob { display: none  !important; }
         }
       `}</style>
 
@@ -273,7 +271,7 @@ export default function Header() {
         fontFamily: "'DM Sans','Segoe UI',sans-serif",
       }}>
 
-        {/* ── Barra ── */}
+        {/* ── Barra principal ── */}
         <div style={{
           position: "relative", overflow: "visible",
           height: 80,
@@ -334,23 +332,21 @@ export default function Header() {
 
               <div style={{ width: 1, height: 24, background: "rgba(255,204,0,.14)", margin: "0 8px" }}/>
 
+              {/* Subastas — siempre visible */}
               <NavDropdown
-                trigger={
-                  <><Zap style={{ width:14, height:14, color:"rgba(255,204,0,.8)" }}/> Subastas</>
-                }
+                trigger={<><Zap style={{ width:14, height:14, color:"rgba(255,204,0,.8)" }}/> Subastas</>}
                 items={navItems}
               />
 
+              {/* Gestión — solo si hay items visibles (Admin/Vendedor/Comprador según item) */}
               <NavDropdown
-                trigger={
-                  <><Layers style={{ width:14, height:14, color:"rgba(255,204,0,.8)" }}/> Gestión</>
-                }
+                trigger={<><Layers style={{ width:14, height:14, color:"rgba(255,204,0,.8)" }}/> Gestión</>}
                 items={mantItems}
               />
 
               <div style={{ width: 1, height: 24, background: "rgba(255,204,0,.14)", margin: "0 8px" }}/>
 
-              {/* Avatar + usuario */}
+              {/* Avatar + cuenta */}
               <NavDropdown
                 align="right"
                 trigger={
@@ -403,42 +399,46 @@ export default function Header() {
             maxHeight: "80vh", overflowY: "auto",
           }}>
             {[
-              { label:"Subastas", items: navItems },
-              { label:"Gestión",  items: mantItems },
-              { label:"Cuenta",   items: userItems },
-            ].map(({ label, items }) => (
-              <div key={label}>
-                <p style={{
-                  fontSize: 9.5, letterSpacing: ".18em", textTransform: "uppercase",
-                  color: "rgba(255,204,0,.38)", padding: "14px 8px 5px",
-                  fontFamily: "'Rajdhani',sans-serif", fontWeight: 700,
-                }}>
-                  {label}
-                </p>
-                {items.filter(i => i.show).map(item => (
-                  <Link
-                    key={item.href} to={item.href}
-                    onClick={() => { item.action?.(); setMobileOpen(false); }}
-                    style={{
-                      display: "flex", alignItems: "center", gap: 11,
-                      padding: "10px 8px", borderRadius: 9,
-                      fontSize: 14, color: item.danger ? "rgba(239,68,68,.8)" : "rgba(255,255,255,.68)",
-                      textDecoration: "none", transition: "all .13s",
-                    }}
-                    onMouseEnter={e => { e.currentTarget.style.background="rgba(255,204,0,.08)"; e.currentTarget.style.color="#fff"; }}
-                    onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=item.danger?"rgba(239,68,68,.8)":"rgba(255,255,255,.68)"; }}
-                  >
-                    <span style={{ color: item.danger?"rgba(239,68,68,.65)":"rgba(255,204,0,.75)", display:"flex" }}>{item.icon}</span>
-                    {item.title}
-                    {item.badge && (
-                      <span style={{ fontSize:10, padding:"2px 7px", borderRadius:20, background:"rgba(255,204,0,.15)", color:"#ffcc00", fontWeight:700 }}>
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                ))}
-              </div>
-            ))}
+              { label: "Subastas", items: navItems },
+              { label: "Gestión",  items: mantItems },
+              { label: "Cuenta",   items: userItems },
+            ].map(({ label, items }) => {
+              const visible = items.filter(i => i.show);
+              if (visible.length === 0) return null;
+              return (
+                <div key={label}>
+                  <p style={{
+                    fontSize: 9.5, letterSpacing: ".18em", textTransform: "uppercase",
+                    color: "rgba(255,204,0,.38)", padding: "14px 8px 5px",
+                    fontFamily: "'Rajdhani',sans-serif", fontWeight: 700,
+                  }}>
+                    {label}
+                  </p>
+                  {visible.map(item => (
+                    <Link
+                      key={item.href} to={item.href}
+                      onClick={() => { item.action?.(); setMobileOpen(false); }}
+                      style={{
+                        display: "flex", alignItems: "center", gap: 11,
+                        padding: "10px 8px", borderRadius: 9,
+                        fontSize: 14, color: item.danger ? "rgba(239,68,68,.8)" : "rgba(255,255,255,.68)",
+                        textDecoration: "none", transition: "all .13s",
+                      }}
+                      onMouseEnter={e => { e.currentTarget.style.background="rgba(255,204,0,.08)"; e.currentTarget.style.color="#fff"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background="transparent"; e.currentTarget.style.color=item.danger?"rgba(239,68,68,.8)":"rgba(255,255,255,.68)"; }}
+                    >
+                      <span style={{ color: item.danger?"rgba(239,68,68,.65)":"rgba(255,204,0,.75)", display:"flex" }}>{item.icon}</span>
+                      {item.title}
+                      {item.badge && (
+                        <span style={{ fontSize:10, padding:"2px 7px", borderRadius:20, background:"rgba(255,204,0,.15)", color:"#ffcc00", fontWeight:700 }}>
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  ))}
+                </div>
+              );
+            })}
           </div>
         )}
       </header>

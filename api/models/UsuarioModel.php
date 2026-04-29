@@ -73,7 +73,7 @@ class UsuarioModel
 
 	public function login($objeto)
 	{
-		$vSql = "SELECT * from usuario where email='$objeto->email'";
+		$vSql = "SELECT * from usuario where email='$objeto->email' and idEstadoUsuario=1";
 		//Ejecutar la consulta
 		$vResultado = $this->enlace->ExecuteSQL($vSql);
 		if (is_object($vResultado[0])) {
