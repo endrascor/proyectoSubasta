@@ -205,9 +205,9 @@ export default function Header() {
   const mantItems = [
     { title: "Subastas Activas",     href: "/subasta/SubastasActivas",    icon: ic(Zap),           show: true },
     { title: "Subastas Finalizadas", href: "/subasta/SubastasFinalizadas", icon: ic(CheckCircle),   show: true },
-    { title: "Cartas",               href: "/carta",                      icon: ic(ShoppingBasket), show: true },
+    { title: "Cartas",               href: "/carta",                      icon: ic(ShoppingBasket), show: authorize(["Administrador","Vendedor"]) },
     { title: "Usuarios",             href: "/usuario/table",              icon: ic(ChartArea),      show: authorize(["Administrador"]) },
-    { title: "Pagos",                href: "/facturacion",                icon: ic(CreditCard),     show: true },
+    { title: "Pagos",                href: "/facturacion",                icon: ic(CreditCard),     show: authorize(["Administrador","Comprador"]) },
   ];
   const userItems = [
     { title: "Iniciar Sesión",    href: "/usuario/login",  icon: ic(LogIn),    show: !isAuthenticated },
