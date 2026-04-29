@@ -418,7 +418,7 @@ useEffect(() => {
 
                     <div>
                       {/* ← NUEVO: solo Admin puede confirmar pagos */}
-                      {isPendiente && isAdmin ? (
+                      {isPendiente ? (
                         <button
                           className="btn-confirm flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-[12px] font-black border"
                           style={{
